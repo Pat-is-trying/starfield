@@ -9,19 +9,21 @@ import (
 )
 
 type Star struct {
-	x, y, z int
+	x, y int
+	sx, sy float32
 }
   
   func main() {
 
 	var w, h int = 800, 800
-	stars := make([]Star, 50)
+	stars := make([]Star, 25)
 
 	for i := 0; i < len(stars); i++ {
 		stars[i] = Star{
-			x: rand.Intn(w),
-			y: rand.Intn(h),
-			z: w,
+			x: rand.Intn(w/2) + (w/4),
+			y: rand.Intn(h/2) + (h/4),
+			sx: 1.0,
+			sy: 1.0,
 		}
 	}
 
@@ -33,26 +35,48 @@ type Star struct {
 	var images []*image.Paletted
     var delays []int
 
-	for i := 0; i < 20; i++ {
+	for i := 0; i < 40; i++ {
 
 		img := image.NewPaletted(image.Rect(0, 0, w, h), palette)
 		images = append(images, img)
-		delays = append(delays, 0)
+		delays = append(delays, 40)
 
 		for step := 0; step < len(stars); step++ {
 
-			stars[step].z /= 2
+			if stars[step].x > 400 {
+				stars[step].sx *= 1.2
+			} else {
+				stars[step].sx /= 1.2
+			}
 
-			if stars[step].z == 0 {
-				break
+			if stars[step].y > 400 {
+				stars[step].sy *= 1.2
+			} else {
+				stars[step].sy /= 1.2
+			}
+
+			deltaX := int(float32(stars[step].x) * stars[step].sx)
+			deltaY := int(float32(stars[step].y) * stars[step].sy)
+			
+
+			if stars[step].x > 800 || stars[step].y > 800 || stars[step].x < 0 || stars[step].y < 0 {
+				stars = append(stars[:step], stars[step+1:]...)
 			}
 	
-			sx := (stars[step].x) / stars[step].z
-			sy := (stars[step].y) / stars[step].z
-	
-			img.Set(sx, sy, color.RGBA{255,255,255,255})
+			img.Set(deltaX, deltaY, color.RGBA{255,255,255,255})
 	
 		}
+
+		newStars := rand.Intn(10)
+		for i := 0; i < newStars; i++ {
+			stars = append(stars, Star{
+				x: rand.Intn(w),
+				y: rand.Intn(h),
+				sx: 1.0,
+				sy: 1.0,
+			})
+		}
+
 	}
 
 
